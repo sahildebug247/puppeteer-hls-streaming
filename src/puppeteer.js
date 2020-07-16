@@ -7,6 +7,7 @@ const bootstrap = async () => {
     defaultViewport: null,
     args: [
       '--allow-running-insecure-content',
+      '--kiosk',
       '--enable-usermedia-screen-capturing',
       '--allow-http-screen-capture',
       '--auto-select-desktop-capture-source=pickme',
@@ -19,16 +20,17 @@ const bootstrap = async () => {
       '--use-gl=egl',
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--start-maximized',
+      // '--start-maximized',
+      '--window-size=1920,974',
     ],
     ignoreDefaultArgs: ['--mute-audio'],
   });
 
   const page = await browser.newPage();
-  page.setViewport({
-    height: 1920,
-    width: 1080,
-  });
+  // page.setViewport({
+  //   height: 1920,
+  //   width: 1080,
+  // });
 
   await page.goto(url, { waitUntil: 'networkidle2' });
   await page.waitFor(4000);
@@ -95,40 +97,40 @@ const bootstrap = async () => {
 
       setInterval(record_and_send, 5000);
 
-      //   const mediaRecorder = new MediaRecorder(stream, {
-      //     audioBitsPerSecond: 128000,
-      //     videoBitsPerSecond: 5000000,
-      //     // ignoreMutedMedia: true,
-      //     mimeType: 'video/webm; codecs=vp9',
-      //   });
+      const mediaRecorder = new MediaRecorder(stream, {
+        audioBitsPerSecond: 128000,
+        videoBitsPerSecond: 5000000,
+        // ignoreMutedMedia: true,
+        mimeType: 'video/webm; codecs=vp9',
+      });
 
-      //   let chunks = [];
-      //   mediaRecorder.onstop = async () => {
-      //     const superBuffer = new Blob(chunks, {
-      //       type: 'video/webm',
-      //     });
-      //     uploadBlob(
-      //       superBuffer,
-      //       `${baseFileName}__${recordingStartTime}__${Date.now()}__${uploadCount}`,
-      //     );
-      //     recordingStartTime = undefined;
-      //     uploadCount++;
-      //     chunks = [];
-      //   };
+      let chunks = [];
+      mediaRecorder.onstop = async () => {
+        const superBuffer = new Blob(chunks, {
+          type: 'video/webm',
+        });
+        uploadBlob(
+          superBuffer,
+          `${baseFileName}__${recordingStartTime}__${Date.now()}__${uploadCount}`
+        );
+        recordingStartTime = undefined;
+        uploadCount++;
+        chunks = [];
+      };
 
-      //   Push chunks when data is available
-      //   mediaRecorder.ondataavailable = e => {
-      //     console.log(`Inside data available: ${Date.now()}`);
-      //     if (recordingStartTime === undefined) {
-      //       recordingStartTime = Date.now();
-      //     }
-      //     if (e.data.size > 0) {
-      //       chunks.push(e.data);
-      //     }
-      //   };
-      setTimeout(() => {
-        console.log(`Recording is stopped`);
-      }, 70000);
+      // Push chunks when data is available
+      mediaRecorder.ondataavailable = (e) => {
+        console.log(`Inside data available: ${Date.now()}`);
+        if (recordingStartTime === undefined) {
+          recordingStartTime = Date.now();
+        }
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+      // setTimeout(() => {
+      //   console.log(`Recording is stopped`);
+      // }, 70000);
     });
 
     console.log(`Initialized window navigator success`);

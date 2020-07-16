@@ -41,6 +41,42 @@ async function webm2Mpegts(filePath: string, tsFilePath: string) {
   //   filePath = `../../` + filePath;
 
   console.log({ filePath, tsFilePath });
+  // const args2 = [
+  //   FFMPEG_DIR + 'ffmpeg',
+  //   '-v',
+  //   'quiet', // less verbose
+  //   '-loglevel',
+  //   'error',
+  //   '-i',
+  //   filePath, // inpuf file(s)
+  //   '-y',
+  //   '-r',
+  //   '30',
+  //   '-f',
+  //   'pulse',
+  //   '-ac',
+  //   '2',
+  //   '-c:v',
+  //   'libx264',
+  //   '-preset',
+  //   'superfast',
+  //   '-acodec',
+  //   'libmp3lame',
+  //   '-ar',
+  //   '48000',
+  //   '-pix_fmt',
+  //   'yuv420p',
+  //   '-s',
+  //   '1344x756',
+  //   '-threads',
+  //   '0',
+  //   '-f',
+  //   'mpegts',
+  //   // 'setpts=PTS+' + t0 + '/TB',
+  //   //-async 1
+  //   '-y', // overwrite output files
+  //   tsFilePath, // output file
+  // ];
   const args = [
     FFMPEG_DIR + 'ffmpeg',
     '-v',
@@ -49,53 +85,81 @@ async function webm2Mpegts(filePath: string, tsFilePath: string) {
     'error',
     '-i',
     filePath, // inpuf file(s)
-    '-vcodec',
-    'libx264', // video codec
-    '-acodec',
-    'libfaac', // audio codec
-    // '-tune', 'zerolatency', // optimize for streaming?
-    '-r',
-    fps, // frame rate (fps)
-    '-profile:v',
-    'baseline', // ?
-    '-b:v',
-    '800k', // video bitrate
-    '-b:a',
-    '48k', // audio bitrate
+    '-c:v',
+    'libx264',
+    '-preset',
+    'superfast',
+    '-tune',
+    'zerolatency',
+    '-c:a',
+    'aac',
+    '-ar',
+    '44100',
     '-f',
-    'mpegts', // desired format
-    '-mpegts_copyts',
-    '1',
-    // 'setpts=PTS+' + t0 + '/TB',
-    //-async 1
-    '-y', // overwrite output files
-    tsFilePath, // output file
+    'flv',
+    'rtmp://localhost/live/puppeteer_stream',
+    // '-acodec',
+    // 'libmp3lame',
+    // '-ar',
+    // '48000',
+    // '-pix_fmt',
+    // 'yuv420p',
+    // '-s',
+    // '1344x756',
+    // '-threads',
+    // '0',
+    // '-f',
+    // 'mpegts',
+    // // 'setpts=PTS+' + t0 + '/TB',
+    // //-async 1
+    // '-y', // overwrite output files
+    // tsFilePath, // output file
   ];
 
   //console.log(args.join(' '));
 
   const cmd = args.shift();
+  // const cmd2 = args2.shift();
 
   const proc = child_process.spawn(cmd, args);
+  // const proc2 = child_process.spawn(cmd2, args2);
 
   proc.stdout.on('data', function (data) {
     out.push(data.toString());
   });
 
-  proc.stderr.on('data', function (data) {
+  proc.stderr.on('err', function (data) {
     err.push(data.toString());
   });
 
-  proc.on('close', function () {
-    out = out.join('').trim();
-    err = err.join('').trim();
-    if (out) {
-      console.log('\nOUT\n' + out + '\n');
-    }
-    if (err) {
-      console.log('\nERR\n' + err + '\n');
-    }
-  });
+  // proc.on('close', function () {
+  //   out = out.join('').trim();
+  //   err = err.join('').trim();
+  //   if (out) {
+  //     console.log('\nOUT\n' + out + '\n');
+  //   }
+  //   if (err) {
+  //     console.log('\nERR\n' + err + '\n');
+  //   }
+  // });
+  // proc2.stdout.on('data', function (data) {
+  //   out.push(data.toString());
+  // });
+
+  // proc2.stderr.on('err', function (data) {
+  //   err.push(data.toString());
+  // });
+
+  // proc2.on('close', function () {
+  //   out = out.join('').trim();
+  //   err = err.join('').trim();
+  //   if (out) {
+  //     console.log('\nOUT\n' + out + '\n');
+  //   }
+  //   if (err) {
+  //     console.log('\nERR\n' + err + '\n');
+  //   }
+  // });
 }
 
 async function generateM3u8Playlist(
